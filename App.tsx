@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Article } from './types';
+import VoiceControls from './components/VoiceControls';
 
 function App() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -256,22 +257,25 @@ function App() {
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
                   {articles.map((article, index) => (
-                    <div key={index} style={{ 
-                      backgroundColor: isDark ? '#374151' : '#ffffff',
-                      borderRadius: '0.5rem',
-                      padding: '1.5rem',
-                      border: `1px solid ${isDark ? '#4b5563' : '#e5e7eb'}`
-                    }}>
-                      <h3 style={{ fontWeight: '600', fontSize: '1.125rem', marginBottom: '0.5rem' }}>
-                        {article.title}
-                      </h3>
-                      <p style={{ color: isDark ? '#9ca3af' : '#6b7280', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
-                        {article.source}
-                      </p>
-                      <p style={{ color: isDark ? '#d1d5db' : '#374151' }}>
-                        {article.summary}
-                      </p>
-                    </div>
+                                         <div key={index} style={{ 
+                       backgroundColor: isDark ? '#374151' : '#ffffff',
+                       borderRadius: '0.5rem',
+                       padding: '1.5rem',
+                       border: `1px solid ${isDark ? '#4b5563' : '#e5e7eb'}`
+                     }}>
+                       <h3 style={{ fontWeight: '600', fontSize: '1.125rem', marginBottom: '0.5rem' }}>
+                         {article.title}
+                       </h3>
+                       <p style={{ color: isDark ? '#9ca3af' : '#6b7280', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
+                         {article.source}
+                       </p>
+                       <p style={{ color: isDark ? '#d1d5db' : '#374151', marginBottom: '1rem' }}>
+                         {article.summary}
+                       </p>
+                       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                         <VoiceControls text={`${article.title}. ${article.summary}`} />
+                       </div>
+                     </div>
                   ))}
                 </div>
               </div>
