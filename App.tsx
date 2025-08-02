@@ -20,6 +20,104 @@ function App() {
     }
   };
 
+  const generateArticlesForTopic = (topic: string): Article[] => {
+    const topicLower = topic.toLowerCase();
+    
+    // AI and Technology topics
+    if (topicLower.includes('ai') || topicLower.includes('artificial intelligence')) {
+      return [
+        {
+          title: "OpenAI Releases GPT-5 with Revolutionary Multimodal Capabilities",
+          source: "Tech Innovation Daily",
+          summary: "OpenAI has unveiled GPT-5, featuring unprecedented multimodal understanding that can process text, images, audio, and video simultaneously. The new model demonstrates human-level reasoning across multiple domains."
+        },
+        {
+          title: "Google DeepMind Achieves Breakthrough in Protein Folding Prediction",
+          source: "Science & Technology Weekly",
+          summary: "DeepMind's AlphaFold 3 has solved complex protein structures with 99% accuracy, revolutionizing drug discovery and biotechnology research worldwide."
+        }
+      ];
+    }
+    
+    // Quantum Computing topics
+    if (topicLower.includes('quantum')) {
+      return [
+        {
+          title: "IBM Achieves 1000+ Qubit Quantum Processor Milestone",
+          source: "Quantum Computing Today",
+          summary: "IBM has successfully built a 1,121-qubit Condor processor, marking a significant step toward quantum advantage in solving complex computational problems."
+        },
+        {
+          title: "Microsoft's Topological Qubits Show 99.8% Error Correction",
+          source: "Advanced Computing Journal",
+          summary: "Microsoft's topological qubit approach demonstrates unprecedented error rates, bringing fault-tolerant quantum computing closer to reality."
+        }
+      ];
+    }
+    
+    // Space Exploration topics
+    if (topicLower.includes('space') || topicLower.includes('exploration')) {
+      return [
+        {
+          title: "NASA's Artemis III Mission Confirms First Woman on Moon",
+          source: "Space Exploration News",
+          summary: "NASA has announced the Artemis III mission will land the first woman and next man on the lunar surface, marking humanity's return to the Moon after 50 years."
+        },
+        {
+          title: "SpaceX Starship Completes Successful Mars Simulation Mission",
+          source: "Interplanetary Weekly",
+          summary: "SpaceX's Starship prototype has completed a full Mars mission simulation, including landing and return procedures, advancing human Mars exploration timeline."
+        }
+      ];
+    }
+    
+    // Climate Change topics
+    if (topicLower.includes('climate') || topicLower.includes('environment')) {
+      return [
+        {
+          title: "Global Carbon Capture Technology Reaches 90% Efficiency",
+          source: "Environmental Science Today",
+          summary: "New carbon capture and storage technology has achieved 90% efficiency rates, potentially removing billions of tons of CO2 from the atmosphere annually."
+        },
+        {
+          title: "Renewable Energy Surpasses Fossil Fuels in Global Electricity Generation",
+          source: "Green Energy Weekly",
+          summary: "For the first time in history, renewable energy sources have generated more electricity than fossil fuels globally, marking a major milestone in the energy transition."
+        }
+      ];
+    }
+    
+    // Medical Technology topics
+    if (topicLower.includes('medical') || topicLower.includes('health') || topicLower.includes('medicine')) {
+      return [
+        {
+          title: "CRISPR Gene Editing Successfully Treats Sickle Cell Disease",
+          source: "Medical Breakthroughs Daily",
+          summary: "Scientists have successfully used CRISPR gene editing to cure sickle cell disease in clinical trials, offering hope to millions of patients worldwide."
+        },
+        {
+          title: "AI-Powered Cancer Detection Achieves 99.5% Accuracy",
+          source: "Healthcare Innovation Journal",
+          summary: "New AI algorithms can detect early-stage cancer with 99.5% accuracy, potentially saving millions of lives through early intervention and treatment."
+        }
+      ];
+    }
+    
+    // Default articles for other topics
+    return [
+      {
+        title: `Latest Developments in ${topic}`,
+        source: "Global News Network",
+        summary: `Recent advancements in ${topic} have shown promising results, with researchers making significant breakthroughs in understanding and application of this field.`
+      },
+      {
+        title: `${topic} Revolutionizes Industry Standards`,
+        source: "Innovation Today",
+        summary: `The field of ${topic} continues to evolve rapidly, with new technologies and methodologies emerging that could transform how we approach related challenges.`
+      }
+    ];
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!topic.trim()) return;
@@ -27,22 +125,12 @@ function App() {
     setIsLoading(true);
     
     try {
+      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const mockArticles: Article[] = [
-        {
-          title: "QuantumLeap AI Unveils Groundbreaking Personalized Drug Discovery Platform",
-          source: "BioTech Insights Daily",
-          summary: "QuantumLeap AI has launched 'GeneRx', a revolutionary platform that uses advanced AI algorithms to analyze genomic data and predict drug responses with 95% accuracy."
-        },
-        {
-          title: "New Neural Network Enables Robots to Perform Delicate Surgical Tasks",
-          source: "Robotics Weekly",
-          summary: "Researchers have developed 'SynapseHand', a neural network that gives robots unprecedented dexterity and precision for surgical procedures."
-        }
-      ];
-      
-      setArticles(mockArticles);
+      // Generate articles based on topic
+      const generatedArticles = generateArticlesForTopic(topic);
+      setArticles(generatedArticles);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -257,25 +345,25 @@ function App() {
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
                   {articles.map((article, index) => (
-                                         <div key={index} style={{ 
-                       backgroundColor: isDark ? '#374151' : '#ffffff',
-                       borderRadius: '0.5rem',
-                       padding: '1.5rem',
-                       border: `1px solid ${isDark ? '#4b5563' : '#e5e7eb'}`
-                     }}>
-                       <h3 style={{ fontWeight: '600', fontSize: '1.125rem', marginBottom: '0.5rem' }}>
-                         {article.title}
-                       </h3>
-                       <p style={{ color: isDark ? '#9ca3af' : '#6b7280', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
-                         {article.source}
-                       </p>
-                       <p style={{ color: isDark ? '#d1d5db' : '#374151', marginBottom: '1rem' }}>
-                         {article.summary}
-                       </p>
-                       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                         <VoiceControls text={`${article.title}. ${article.summary}`} />
-                       </div>
-                     </div>
+                    <div key={index} style={{ 
+                      backgroundColor: isDark ? '#374151' : '#ffffff',
+                      borderRadius: '0.5rem',
+                      padding: '1.5rem',
+                      border: `1px solid ${isDark ? '#4b5563' : '#e5e7eb'}`
+                    }}>
+                      <h3 style={{ fontWeight: '600', fontSize: '1.125rem', marginBottom: '0.5rem' }}>
+                        {article.title}
+                      </h3>
+                      <p style={{ color: isDark ? '#9ca3af' : '#6b7280', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
+                        {article.source}
+                      </p>
+                      <p style={{ color: isDark ? '#d1d5db' : '#374151', marginBottom: '1rem' }}>
+                        {article.summary}
+                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <VoiceControls text={`${article.title}. ${article.summary}`} />
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
