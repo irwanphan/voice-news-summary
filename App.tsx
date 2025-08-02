@@ -30,7 +30,6 @@ function App() {
           title: "OpenAI Releases GPT-5 with Revolutionary Multimodal Capabilities",
           source: "Tech Innovation Daily",
           summary: "OpenAI has unveiled GPT-5, featuring unprecedented multimodal understanding that can process text, images, audio, and video simultaneously. The new model demonstrates human-level reasoning across multiple domains.",
-          url: "https://example.com/article1",
           publishedAt: new Date().toISOString(),
           author: "Tech Reporter"
         },
@@ -38,7 +37,6 @@ function App() {
           title: "Google DeepMind Achieves Breakthrough in Protein Folding Prediction",
           source: "Science & Technology Weekly",
           summary: "DeepMind's AlphaFold 3 has solved complex protein structures with 99% accuracy, revolutionizing drug discovery and biotechnology research worldwide.",
-          url: "https://example.com/article2",
           publishedAt: new Date().toISOString(),
           author: "Science Editor"
         }
@@ -51,7 +49,6 @@ function App() {
           title: "IBM Achieves 1000+ Qubit Quantum Processor Milestone",
           source: "Quantum Computing Today",
           summary: "IBM has successfully built a 1,121-qubit Condor processor, marking a significant step toward quantum advantage in solving complex computational problems.",
-          url: "https://example.com/article3",
           publishedAt: new Date().toISOString(),
           author: "Quantum Researcher"
         },
@@ -59,7 +56,6 @@ function App() {
           title: "Microsoft's Topological Qubits Show 99.8% Error Correction",
           source: "Advanced Computing Journal",
           summary: "Microsoft's topological qubit approach demonstrates unprecedented error rates, bringing fault-tolerant quantum computing closer to reality.",
-          url: "https://example.com/article4",
           publishedAt: new Date().toISOString(),
           author: "Computing Expert"
         }
@@ -72,7 +68,6 @@ function App() {
         title: `Latest Developments in ${topic}`,
         source: "Global News Network",
         summary: `Recent advancements in ${topic} have shown promising results, with researchers making significant breakthroughs in understanding and application of this field.`,
-        url: "https://example.com/article5",
         publishedAt: new Date().toISOString(),
         author: "News Reporter"
       },
@@ -80,7 +75,6 @@ function App() {
         title: `${topic} Revolutionizes Industry Standards`,
         source: "Innovation Today",
         summary: `The field of ${topic} continues to evolve rapidly, with new technologies and methodologies emerging that could transform how we approach related challenges.`,
-        url: "https://example.com/article6",
         publishedAt: new Date().toISOString(),
         author: "Industry Analyst"
       }
@@ -348,20 +342,6 @@ function App() {
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                           <VoiceControls text={`${article.title}. ${article.summary}`} />
                         </div>
-                        {article.url && (
-                          <a 
-                            href={article.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            style={{
-                              fontSize: '0.75rem',
-                              color: '#3b82f6',
-                              textDecoration: 'none'
-                            }}
-                          >
-                            Read Full Article →
-                          </a>
-                        )}
                       </div>
                     </div>
                   ))}
