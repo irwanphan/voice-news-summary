@@ -1,5 +1,4 @@
 import axios from 'axios';
-import Parser from 'rss-parser';
 import { Article } from '../types';
 
 export interface RSSSource {
@@ -9,21 +8,10 @@ export interface RSSSource {
 }
 
 export class RSSService {
-  private parser: Parser;
   private newsApiKey: string;
   private isProduction: boolean;
 
   constructor() {
-    this.parser = new Parser({
-      customFields: {
-        item: [
-          ['media:content', 'media'],
-          ['media:thumbnail', 'thumbnail'],
-          ['dc:creator', 'author'],
-          ['pubDate', 'publishedAt']
-        ]
-      }
-    });
     this.newsApiKey = import.meta.env.VITE_NEWS_API_KEY || '';
     this.isProduction = import.meta.env.PROD || false;
   }
@@ -178,6 +166,39 @@ export class RSSService {
     ];
   }
 
+  private async parseRSSFeed(xmlText: string): Promise<Article[]> {
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+      const items = xmlDoc.querySelectorAll('item');
+      
+      const articles: Article[] = [];
+      
+      items.forEach((item, index) => {
+        if (index >= 3) return; // Limit to 3 articles per source
+        
+        const title = item.querySelector('title')?.textContent || 'No Title';
+        const link = item.querySelector('link')?.textContent || '';
+        const description = item.querySelector('description')?.textContent || '';
+        const pubDate = item.querySelector('pubDate')?.textContent || '';
+        
+        articles.push({
+          title,
+          source: 'RSS Feed',
+          summary: this.cleanContent(description),
+          url: link,
+          publishedAt: pubDate,
+          author: 'Unknown'
+        });
+      });
+      
+      return articles;
+    } catch (error) {
+      console.error('Error parsing RSS feed:', error);
+      return [];
+    }
+  }
+
   async getArticlesFromRSS(topic: string, limit: number = 5): Promise<Article[]> {
     try {
       const articles: Article[] = [];
@@ -227,33 +248,30 @@ export class RSSService {
 
   private async fetchFromSource(source: RSSSource, topic: string): Promise<Article[]> {
     try {
-      let feed;
+      let xmlText: string;
       
       if (this.isProduction) {
         // Use Vercel proxy in production
         const proxyUrl = `/api/proxy?url=${encodeURIComponent(source.url)}`;
         const response = await axios.get(proxyUrl);
-        feed = await this.parser.parseString(response.data);
+        xmlText = response.data;
       } else {
         // Direct fetch in development (may have CORS issues)
-        feed = await this.parser.parseURL(source.url);
+        const response = await fetch(source.url);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        xmlText = await response.text();
       }
       
-      return feed.items
-        .filter(item => {
-          const title = item.title?.toLowerCase() || '';
-          const content = item.contentSnippet?.toLowerCase() || '';
-          return title.includes(topic) || content.includes(topic);
-        })
-        .map(item => ({
-          title: item.title || 'No Title',
-          source: source.name,
-          summary: this.cleanContent(item.contentSnippet || item.content || ''),
-          url: item.link || '',
-          publishedAt: item.pubDate || item.isoDate || '',
-          author: item.creator || item.author || 'Unknown'
-        }))
-        .slice(0, 3); // Limit per source
+      const articles = await this.parseRSSFeed(xmlText);
+      
+      // Filter by topic relevance
+      return articles.filter(article => {
+        const title = article.title.toLowerCase();
+        const summary = article.summary.toLowerCase();
+        return title.includes(topic) || summary.includes(topic);
+      });
 
     } catch (error) {
       console.error(`Error fetching from ${source.name}:`, error);
