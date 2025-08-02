@@ -1,13 +1,23 @@
 
 import React, { useState } from 'react';
-import Header from './components/Header';
-import RedisStatus from './components/RedisStatus';
 import { Article } from './types';
 
 function App() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [topic, setTopic] = useState('latest breakthroughs in AI');
+  const [isDark, setIsDark] = useState(false);
+
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+    if (!isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,34 +26,18 @@ function App() {
     setIsLoading(true);
     
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       const mockArticles: Article[] = [
         {
           title: "QuantumLeap AI Unveils Groundbreaking Personalized Drug Discovery Platform",
           source: "BioTech Insights Daily",
-          summary: "QuantumLeap AI has launched 'GeneRx', a revolutionary platform that uses advanced AI algorithms to analyze genomic data and predict drug responses with 95% accuracy. The system can identify personalized treatment options for complex diseases within hours, significantly reducing the time and cost of drug development."
+          summary: "QuantumLeap AI has launched 'GeneRx', a revolutionary platform that uses advanced AI algorithms to analyze genomic data and predict drug responses with 95% accuracy."
         },
         {
           title: "New Neural Network Enables Robots to Perform Delicate Surgical Tasks",
           source: "Robotics Weekly",
-          summary: "Researchers have developed 'SynapseHand', a neural network that gives robots unprecedented dexterity and precision for surgical procedures. The AI system can perform microsurgery with accuracy surpassing human surgeons, opening new possibilities for automated medical procedures."
-        },
-        {
-          title: "OmniGen AI Releases 'Nexus' - First True Multimodal Generative Model",
-          source: "AI Innovation Hub",
-          summary: "OmniGen AI has unveiled 'Nexus', a breakthrough generative model that can create cohesive content across text, image, and video from a single prompt. This represents the first truly unified multimodal AI system, revolutionizing content creation workflows."
-        },
-        {
-          title: "GridFlow AI's 'EcoGrid' Optimizes Renewable Energy Management",
-          source: "GreenTech Today",
-          summary: "GridFlow AI's new 'EcoGrid' predictive algorithm is transforming renewable energy management by balancing supply and demand on national grids in real-time. The system has already reduced energy waste by 40% in pilot programs across Europe."
-        },
-        {
-          title: "Breakthrough in Explainable AI: 'ClarityNet' Provides Transparency for Complex Models",
-          source: "AI Ethics Journal",
-          summary: "A new framework called 'ClarityNet' is making complex AI models transparent and interpretable. This breakthrough addresses the 'black box' problem in AI, allowing users to understand how AI systems make decisions, crucial for healthcare and legal applications."
+          summary: "Researchers have developed 'SynapseHand', a neural network that gives robots unprecedented dexterity and precision for surgical procedures."
         }
       ];
       
@@ -55,64 +49,174 @@ function App() {
     }
   };
 
+  const quickTopics = [
+    'latest breakthroughs in AI',
+    'quantum computing advances',
+    'space exploration news',
+    'climate change solutions',
+    'medical technology innovations'
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Left Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8 space-y-4">
-              <RedisStatus />
-              
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">Quick Topics</h3>
-                <div className="space-y-2">
-                  {[
-                    'latest breakthroughs in AI',
-                    'quantum computing advances',
-                    'space exploration news',
-                    'climate change solutions',
-                    'medical technology innovations'
-                  ].map((suggestedTopic, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setTopic(suggestedTopic)}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-                    >
-                      {suggestedTopic}
-                    </button>
-                  ))}
-                </div>
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: isDark ? '#1f2937' : '#f9fafb',
+      color: isDark ? '#f9fafb' : '#1f2937',
+      transition: 'all 0.2s'
+    }}>
+      {/* Header */}
+      <header style={{ 
+        backgroundColor: isDark ? '#111827' : '#ffffff',
+        borderBottom: `1px solid ${isDark ? '#374151' : '#e5e7eb'}`,
+        padding: '1rem'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ 
+              width: '2rem', 
+              height: '2rem', 
+              backgroundColor: '#2563eb', 
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: '0.875rem'
+            }}>
+              V
+            </div>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Voice News</h1>
+          </div>
+          
+          <button
+            onClick={toggleTheme}
+            style={{
+              padding: '0.5rem',
+              borderRadius: '0.5rem',
+              backgroundColor: isDark ? '#374151' : '#f3f4f6',
+              border: 'none',
+              cursor: 'pointer',
+              color: isDark ? '#fbbf24' : '#374151'
+            }}
+          >
+            {isDark ? '☀️' : '🌙'}
+          </button>
+        </div>
+      </header>
+
+      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '2rem' }}>
+          {/* Sidebar */}
+          <div>
+            <div style={{ 
+              backgroundColor: isDark ? '#374151' : '#ffffff',
+              borderRadius: '0.5rem',
+              padding: '1rem',
+              border: `1px solid ${isDark ? '#4b5563' : '#e5e7eb'}`,
+              marginBottom: '1rem'
+            }}>
+              <h3 style={{ fontWeight: '600', marginBottom: '0.75rem' }}>Quick Topics</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {quickTopics.map((suggestedTopic, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setTopic(suggestedTopic)}
+                    style={{
+                      textAlign: 'left',
+                      padding: '0.5rem 0.75rem',
+                      fontSize: '0.875rem',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      borderRadius: '0.375rem',
+                      color: isDark ? '#d1d5db' : '#4b5563'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = isDark ? '#4b5563' : '#f3f4f6';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    {suggestedTopic}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ 
+              backgroundColor: isDark ? '#374151' : '#ffffff',
+              borderRadius: '0.5rem',
+              padding: '1rem',
+              border: `1px solid ${isDark ? '#4b5563' : '#e5e7eb'}`
+            }}>
+              <h3 style={{ fontWeight: '600', marginBottom: '0.75rem' }}>Redis Status</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <div style={{ 
+                  width: '0.5rem', 
+                  height: '0.5rem', 
+                  backgroundColor: '#10b981',
+                  borderRadius: '50%'
+                }}></div>
+                <span style={{ fontSize: '0.75rem', color: '#10b981' }}>Connected</span>
+              </div>
+              <div style={{ fontSize: '0.75rem', color: isDark ? '#9ca3af' : '#6b7280' }}>
+                Caching enabled • Session management active
               </div>
             </div>
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-3">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-8">
-              <div className="text-center mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <div>
+            <div style={{ 
+              backgroundColor: isDark ? '#374151' : '#ffffff',
+              borderRadius: '0.75rem',
+              padding: '1.5rem',
+              border: `1px solid ${isDark ? '#4b5563' : '#e5e7eb'}`,
+              marginBottom: '2rem'
+            }}>
+              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
                   AI-Powered News Generator
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
                   Enter a topic to get AI-generated news summaries, read aloud on demand.
                 </p>
               </div>
               
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="relative">
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ position: 'relative' }}>
                   <input
                     type="text"
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
                     placeholder="Enter a topic for news articles..."
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      border: `1px solid ${isDark ? '#4b5563' : '#d1d5db'}`,
+                      borderRadius: '0.5rem',
+                      fontSize: '1rem',
+                      backgroundColor: isDark ? '#1f2937' : '#ffffff',
+                      color: isDark ? '#f9fafb' : '#1f2937'
+                    }}
                   />
                   {isLoading && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div style={{ 
+                      position: 'absolute', 
+                      right: '0.75rem', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)'
+                    }}>
+                      <div style={{ 
+                        width: '1.25rem', 
+                        height: '1.25rem', 
+                        border: '2px solid #3b82f6',
+                        borderTop: '2px solid transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }}></div>
                     </div>
                   )}
                 </div>
@@ -120,7 +224,18 @@ function App() {
                 <button
                   type="submit"
                   disabled={!topic.trim() || isLoading}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                  style={{
+                    width: '100%',
+                    background: 'linear-gradient(to right, #2563eb, #4f46e5)',
+                    color: 'white',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '0.5rem',
+                    fontSize: '1rem',
+                    fontWeight: '500',
+                    border: 'none',
+                    cursor: 'pointer',
+                    opacity: (!topic.trim() || isLoading) ? 0.5 : 1
+                  }}
                 >
                   {isLoading ? 'Generating Articles...' : 'Get News'}
                 </button>
@@ -128,43 +243,34 @@ function App() {
             </div>
 
             {isLoading && (
-              <div className="flex justify-center py-8">
-                <div className="text-blue-600 dark:text-blue-400">Generating articles...</div>
+              <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <div style={{ color: '#3b82f6' }}>Generating articles...</div>
               </div>
             )}
 
             {articles.length > 0 && !isLoading && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Generated Articles ({articles.length})
-                  </h2>
-                </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
+                  Generated Articles ({articles.length})
+                </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
                   {articles.map((article, index) => (
-                    <div key={index} className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-2">
+                    <div key={index} style={{ 
+                      backgroundColor: isDark ? '#374151' : '#ffffff',
+                      borderRadius: '0.5rem',
+                      padding: '1.5rem',
+                      border: `1px solid ${isDark ? '#4b5563' : '#e5e7eb'}`
+                    }}>
+                      <h3 style={{ fontWeight: '600', fontSize: '1.125rem', marginBottom: '0.5rem' }}>
                         {article.title}
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                      <p style={{ color: isDark ? '#9ca3af' : '#6b7280', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
                         {article.source}
                       </p>
-                      <p className="text-gray-700 dark:text-gray-300">
+                      <p style={{ color: isDark ? '#d1d5db' : '#374151' }}>
                         {article.summary}
                       </p>
-                      <div className="flex items-center justify-end mt-4 space-x-2">
-                        <button className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                          </svg>
-                        </button>
-                        <button className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-                          </svg>
-                        </button>
-                      </div>
                     </div>
                   ))}
                 </div>
@@ -172,12 +278,12 @@ function App() {
             )}
 
             {articles.length === 0 && !isLoading && (
-              <div className="text-center py-12">
-                <div className="text-gray-400 dark:text-gray-500 text-6xl mb-4">📰</div>
-                <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
+              <div style={{ textAlign: 'center', padding: '3rem' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📰</div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>
                   No articles yet
                 </h3>
-                <p className="text-gray-500 dark:text-gray-500">
+                <p style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
                   Enter a topic above to generate news articles
                 </p>
               </div>
@@ -185,6 +291,13 @@ function App() {
           </div>
         </div>
       </main>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: translateY(-50%) rotate(0deg); }
+          to { transform: translateY(-50%) rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
