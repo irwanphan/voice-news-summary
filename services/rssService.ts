@@ -11,6 +11,7 @@ export interface RSSSource {
 export class RSSService {
   private parser: Parser;
   private newsApiKey: string;
+  private isProduction: boolean;
 
   constructor() {
     this.parser = new Parser({
@@ -24,6 +25,7 @@ export class RSSService {
       }
     });
     this.newsApiKey = import.meta.env.VITE_NEWS_API_KEY || '';
+    this.isProduction = import.meta.env.PROD || false;
   }
 
   // Google News RSS feeds
@@ -157,7 +159,7 @@ export class RSSService {
       ];
     }
     
-    // Default articles for other topics
+    // Default articles for any topic
     return [
       {
         title: `Latest Developments in ${topic}`,
@@ -225,7 +227,17 @@ export class RSSService {
 
   private async fetchFromSource(source: RSSSource, topic: string): Promise<Article[]> {
     try {
-      const feed = await this.parser.parseURL(source.url);
+      let feed;
+      
+      if (this.isProduction) {
+        // Use Vercel proxy in production
+        const proxyUrl = `/api/proxy?url=${encodeURIComponent(source.url)}`;
+        const response = await axios.get(proxyUrl);
+        feed = await this.parser.parseString(response.data);
+      } else {
+        // Direct fetch in development (may have CORS issues)
+        feed = await this.parser.parseURL(source.url);
+      }
       
       return feed.items
         .filter(item => {
@@ -305,6 +317,7 @@ export class RSSService {
   async getArticles(topic: string, limit: number = 5): Promise<Article[]> {
     try {
       console.log('🔍 Attempting to fetch RSS articles for:', topic);
+      console.log('🌍 Environment:', this.isProduction ? 'Production' : 'Development');
       
       // Try RSS first
       const rssArticles = await this.getArticlesFromRSS(topic, limit);
