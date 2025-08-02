@@ -77,7 +77,6 @@ class RedisAIService {
       if (!this.isConnected) return;
       
       const cacheEntry: CacheEntry = {
-        key,
         data,
         ttl,
         timestamp: Date.now(),
@@ -155,7 +154,6 @@ class RedisAIService {
             id: key,
             score: similarity,
             content: parsed.topic,
-            metadata: { articles: parsed.articles }
           });
         }
       }
@@ -200,9 +198,9 @@ class RedisAIService {
       const session: UserSession = {
         sessionId,
         userId,
-        topicHistory: [],
+        topics: [],
+        createdAt: Date.now(),
         lastActivity: Date.now(),
-        preferences: {},
       };
       
       await this.redis.setex(`session:${sessionId}`, 86400, JSON.stringify(session));
@@ -249,8 +247,8 @@ class RedisAIService {
       const session = await this.getSession(sessionId);
       if (!session) return;
       
-      session.topicHistory = [topic, ...session.topicHistory.filter(t => t !== topic)].slice(0, 10);
-      await this.updateSession(sessionId, { topicHistory: session.topicHistory });
+      session.topics = [topic, ...session.topics.filter(t => t !== topic)].slice(0, 10);
+      await this.updateSession(sessionId, { topics: session.topics });
     } catch (error) {
       console.error('Topic history update error:', error);
     }
@@ -259,7 +257,7 @@ class RedisAIService {
   // AI Request Analytics
   async logAIRequest(request: AIRequest): Promise<void> {
     try {
-      const requestKey = `ai_request:${request.sessionId}:${Date.now()}`;
+      const requestKey = `ai_request:${request.id}:${Date.now()}`;
       await this.redis.setex(requestKey, 604800, JSON.stringify(request)); // 7 days TTL
       
       // Update analytics
