@@ -128,7 +128,7 @@ export class RSSService {
       ];
     }
     
-    if (topicLower.includes('medical') || topicLower.includes('health') || topicLower.includes('medicine')) {
+    if (topicLower.includes('medical') || topic.includes('health') || topic.includes('medicine')) {
       return [
         {
           title: "CRISPR Gene Editing Successfully Treats Sickle Cell Disease",
@@ -168,19 +168,35 @@ export class RSSService {
 
   private async parseRSSFeed(xmlText: string): Promise<Article[]> {
     try {
+      console.log('🔍 Parsing RSS feed...');
+      
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+      
+      // Check for parsing errors
+      const parseError = xmlDoc.querySelector('parsererror');
+      if (parseError) {
+        console.error('❌ XML parsing error:', parseError.textContent);
+        return [];
+      }
+      
       const items = xmlDoc.querySelectorAll('item');
+      console.log('📦 Found RSS items:', items.length);
       
       const articles: Article[] = [];
       
       items.forEach((item, index) => {
         if (index >= 3) return; // Limit to 3 articles per source
         
-        const title = item.querySelector('title')?.textContent || 'No Title';
-        const link = item.querySelector('link')?.textContent || '';
-        const description = item.querySelector('description')?.textContent || '';
-        const pubDate = item.querySelector('pubDate')?.textContent || '';
+        const title = item.querySelector('title')?.textContent?.trim() || 'No Title';
+        const link = item.querySelector('link')?.textContent?.trim() || '';
+        const description = item.querySelector('description')?.textContent?.trim() || '';
+        const pubDate = item.querySelector('pubDate')?.textContent?.trim() || '';
+        
+        // Skip if no title or description
+        if (!title || title === 'No Title' || !description) {
+          return;
+        }
         
         articles.push({
           title,
@@ -192,9 +208,10 @@ export class RSSService {
         });
       });
       
+      console.log('✅ Parsed articles:', articles.length);
       return articles;
     } catch (error) {
-      console.error('Error parsing RSS feed:', error);
+      console.error('❌ Error parsing RSS feed:', error);
       return [];
     }
   }
@@ -253,28 +270,47 @@ export class RSSService {
       if (this.isProduction) {
         // Use Vercel proxy in production
         const proxyUrl = `/api/proxy?url=${encodeURIComponent(source.url)}`;
-        const response = await axios.get(proxyUrl);
+        console.log('🌐 Using Vercel proxy:', proxyUrl);
+        
+        const response = await axios.get(proxyUrl, {
+          timeout: 15000, // 15 seconds timeout
+          headers: {
+            'Accept': 'application/xml, text/xml, */*'
+          }
+        });
+        
         xmlText = response.data;
+        console.log('✅ Proxy response received:', xmlText.length, 'characters');
       } else {
         // Direct fetch in development (may have CORS issues)
+        console.log('🔗 Direct fetch:', source.url);
         const response = await fetch(source.url);
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         xmlText = await response.text();
+        console.log('✅ Direct fetch response:', xmlText.length, 'characters');
       }
       
       const articles = await this.parseRSSFeed(xmlText);
+      console.log('📄 Parsed articles:', articles.length);
       
       // Filter by topic relevance
-      return articles.filter(article => {
+      const filteredArticles = articles.filter(article => {
         const title = article.title.toLowerCase();
         const summary = article.summary.toLowerCase();
         return title.includes(topic) || summary.includes(topic);
       });
+      
+      console.log('🎯 Topic-relevant articles:', filteredArticles.length);
+      return filteredArticles;
 
     } catch (error) {
-      console.error(`Error fetching from ${source.name}:`, error);
+      console.error(`❌ Error fetching from ${source.name}:`, error);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+      }
       return [];
     }
   }
