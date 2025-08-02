@@ -1,112 +1,122 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { Article } from './types';
-import { generateNewsAndSummaries } from './services/geminiService';
+import React, { useState } from 'react';
 import Header from './components/Header';
 import TopicInput from './components/TopicInput';
 import ArticleCard from './components/ArticleCard';
 import Spinner from './components/Spinner';
+import RedisStatus from './components/RedisStatus';
+import { Article } from './types';
 
-const App: React.FC = () => {
-  const [topic, setTopic] = useState<string>('latest breakthroughs in AI');
+function App() {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [activeArticleId, setActiveArticleId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleFetchNews = useCallback(async (currentTopic: string) => {
-    if (!currentTopic.trim()) {
-      setError('Please enter a topic.');
-      return;
-    }
+  const handleArticlesGenerated = (newArticles: Article[]) => {
+    setArticles(newArticles);
+  };
 
-    setIsLoading(true);
-    setError(null);
-    setArticles([]); // Clear previous articles
-    setActiveArticleId(null); // Reset active article
-
-    try {
-      // Check cache first
-      const cachedData = localStorage.getItem(`news_${currentTopic}`);
-      if (cachedData) {
-        const parsedData: Article[] = JSON.parse(cachedData);
-        setArticles(parsedData);
-      } else {
-        const generatedArticles = await generateNewsAndSummaries(currentTopic);
-        // Add a unique ID to each article
-        const articlesWithIds = generatedArticles.map((art, index) => ({ ...art, id: `${Date.now()}-${index}`}));
-        setArticles(articlesWithIds);
-        // Cache the result
-        localStorage.setItem(`news_${currentTopic}`, JSON.stringify(articlesWithIds));
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Failed to fetch news. The topic might be too restrictive or there was an API error.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-  
-  // Fetch initial news on mount
-  useEffect(() => {
-    handleFetchNews(topic);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-
-  const handleSetActiveArticle = (id: string) => {
-    setActiveArticleId(currentId => currentId === id ? null : id);
+  const handleLoading = (loading: boolean) => {
+    setIsLoading(loading);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <Header />
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold text-center text-gray-800 dark:text-white mb-4">
-            Voice News Summary
-          </h1>
-          <p className="text-center text-gray-600 dark:text-gray-400 mb-8">
-            Enter a topic to get AI-generated news summaries, read aloud on demand.
-          </p>
-          
-          <TopicInput
-            topic={topic}
-            setTopic={setTopic}
-            onFetch={handleFetchNews}
-            isLoading={isLoading}
-          />
-
-          {isLoading && (
-            <div className="flex justify-center items-center mt-12">
-              <Spinner />
-              <p className="ml-4 text-lg">Generating news, please wait...</p>
+      
+      <main className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Left Sidebar - Redis Status */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-8">
+              <RedisStatus className="mb-6" />
+              
+              <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                <h3 className="font-semibold text-gray-800 mb-3">Redis AI Features</h3>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Intelligent Caching</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Vector Search</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span>Session Management</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <span>Real-time Analytics</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
+          </div>
 
-          {error && (
-            <div className="mt-8 text-center bg-red-100 dark:bg-red-900/30 border border-red-400 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg" role="alert">
-              <strong className="font-bold">Oops! </strong>
-              <span className="block sm:inline">{error}</span>
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
+              <div className="text-center mb-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  AI-Powered News Generator
+                </h1>
+                <p className="text-gray-600">
+                  Generate realistic news articles with Redis AI for enhanced performance
+                </p>
+              </div>
+              
+              <TopicInput 
+                onArticlesGenerated={handleArticlesGenerated}
+                onLoading={handleLoading}
+              />
             </div>
-          )}
 
-          {!isLoading && articles.length > 0 && (
-            <div className="mt-12 space-y-6">
-              {articles.map((article) => (
-                <ArticleCard
-                  key={article.id}
-                  article={article}
-                  isActive={activeArticleId === article.id}
-                  onPlayClick={() => handleSetActiveArticle(article.id!)}
-                />
-              ))}
-            </div>
-          )}
+            {isLoading && (
+              <div className="flex justify-center py-8">
+                <Spinner />
+              </div>
+            )}
+
+            {articles.length > 0 && !isLoading && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Generated Articles ({articles.length})
+                  </h2>
+                  <div className="text-sm text-gray-500">
+                    Powered by Redis AI
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {articles.map((article, index) => (
+                    <ArticleCard 
+                      key={index} 
+                      article={article} 
+                      className="h-full"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {articles.length === 0 && !isLoading && (
+              <div className="text-center py-12">
+                <div className="text-gray-400 text-6xl mb-4">📰</div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  No articles yet
+                </h3>
+                <p className="text-gray-500">
+                  Enter a topic above to generate news articles with Redis AI
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>
   );
-};
+}
 
 export default App;
