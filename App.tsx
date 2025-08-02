@@ -1,82 +1,135 @@
 
 import React, { useState } from 'react';
-import Header from './components/Header';
-import TopicInput from './components/TopicInput';
-import ArticleCard from './components/ArticleCard';
-import Spinner from './components/Spinner';
 import { Article } from './types';
 
 function App() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [topic, setTopic] = useState('');
 
-  const handleArticlesGenerated = (newArticles: Article[]) => {
-    setArticles(newArticles);
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!topic.trim()) return;
 
-  const handleLoading = (loading: boolean) => {
-    setIsLoading(loading);
+    setIsLoading(true);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const mockArticles: Article[] = [
+        {
+          title: "Test Article 1",
+          source: "Test News",
+          summary: "This is a test article generated for debugging purposes."
+        },
+        {
+          title: "Test Article 2", 
+          source: "Test News",
+          summary: "Another test article to verify the application is working."
+        }
+      ];
+      
+      setArticles(mockArticles);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              AI-Powered News Generator
-            </h1>
-            <p className="text-gray-600">
-              Generate realistic news articles with AI
-            </p>
-          </div>
-          
-          <TopicInput 
-            onArticlesGenerated={handleArticlesGenerated}
-            onLoading={handleLoading}
-          />
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: '#f0f9ff', 
+      padding: '2rem',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <h1 style={{ 
+          fontSize: '2rem', 
+          fontWeight: 'bold', 
+          textAlign: 'center', 
+          color: '#1f2937',
+          marginBottom: '2rem'
+        }}>
+          AI News Generator
+        </h1>
+        
+        <div style={{ 
+          backgroundColor: 'white', 
+          borderRadius: '12px', 
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          padding: '1.5rem',
+          marginBottom: '2rem'
+        }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <input
+              type="text"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="Enter a topic..."
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
+                fontSize: '1rem'
+              }}
+            />
+            <button
+              type="submit"
+              disabled={!topic.trim() || isLoading}
+              style={{
+                width: '100%',
+                backgroundColor: '#2563eb',
+                color: 'white',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: '500',
+                border: 'none',
+                cursor: 'pointer',
+                opacity: (!topic.trim() || isLoading) ? 0.5 : 1
+              }}
+            >
+              {isLoading ? 'Generating...' : 'Generate Articles'}
+            </button>
+          </form>
         </div>
 
         {isLoading && (
-          <div className="flex justify-center py-8">
-            <Spinner />
+          <div style={{ textAlign: 'center', padding: '2rem' }}>
+            <div style={{ color: '#2563eb' }}>Loading...</div>
           </div>
         )}
 
-        {articles.length > 0 && !isLoading && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Generated Articles ({articles.length})
-              </h2>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {articles.map((article, index) => (
-                <ArticleCard 
-                  key={index} 
-                  article={article} 
-                  className="h-full"
-                />
-              ))}
-            </div>
+        {articles.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
+              Generated Articles ({articles.length})
+            </h2>
+            {articles.map((article, index) => (
+              <div key={index} style={{ 
+                backgroundColor: 'white', 
+                borderRadius: '8px', 
+                padding: '1rem',
+                border: '1px solid #e5e7eb'
+              }}>
+                <h3 style={{ fontWeight: '600', fontSize: '1.125rem', marginBottom: '0.5rem' }}>
+                  {article.title}
+                </h3>
+                <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                  {article.source}
+                </p>
+                <p style={{ color: '#374151' }}>
+                  {article.summary}
+                </p>
+              </div>
+            ))}
           </div>
         )}
-
-        {articles.length === 0 && !isLoading && (
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-6xl mb-4">📰</div>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
-              No articles yet
-            </h3>
-            <p className="text-gray-500">
-              Enter a topic above to generate news articles
-            </p>
-          </div>
-        )}
-      </main>
+      </div>
     </div>
   );
 }
