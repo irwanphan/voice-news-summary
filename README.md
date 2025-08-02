@@ -1,29 +1,32 @@
-# Voice News Summary with Redis AI
+# Voice News Summary
 
-A modern AI-powered news generator that uses Redis for AI to provide intelligent caching, vector search, session management, and real-time analytics.
+An AI-powered news generator that fetches real-time articles from RSS feeds and provides text-to-speech functionality.
 
 ## 🚀 Features
 
-### Redis AI Integration
-- **Intelligent Caching**: Fast response times with Redis caching
-- **Vector Search**: Find similar topics using semantic search
-- **Session Management**: Track user preferences and history
-- **Real-time Analytics**: Monitor AI request patterns and performance
-- **Health Monitoring**: Live Redis connection status
+- **Real-time RSS Integration**: Fetches articles from Google News RSS feeds and NewsAPI
+- **Topic-based Search**: Find articles related to specific topics
+- **Text-to-Speech**: Listen to articles with voice controls
+- **Dark/Light Mode**: Toggle between themes
+- **Responsive Design**: Works on desktop and mobile
+- **Redis AI Integration**: Caching, session management, and analytics (optional)
 
-### AI Features
-- **News Generation**: Create realistic news articles using Google Gemini
-- **Voice Integration**: Text-to-speech capabilities
-- **Topic History**: Remember user's recent searches
-- **Performance Optimization**: 15x faster with semantic caching
+## 📰 News Sources
+
+- **Google News RSS**: Technology, Science, Health, Business categories
+- **NewsAPI**: Additional real-time news sources
+- **Real-time Updates**: Fresh content from multiple sources
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19 + TypeScript + Tailwind CSS
-- **AI**: Google Gemini API
-- **Database**: Redis for AI
-- **Voice**: Web Speech API
+- **Frontend**: React 19 + TypeScript
 - **Build Tool**: Vite
+- **Styling**: Inline styles (professional design)
+- **RSS Parsing**: rss-parser
+- **HTTP Client**: Axios
+- **Text-to-Speech**: Web Speech API
+- **Caching**: Redis (optional)
+- **AI**: Google Gemini API
 
 ## 📦 Installation
 
@@ -39,143 +42,167 @@ A modern AI-powered news generator that uses Redis for AI to provide intelligent
    ```
 
 3. **Set up environment variables**
-   Create a `.env` file in the root directory:
-   ```env
-   # Google Gemini API Key
-   API_KEY=your_gemini_api_key_here
+   ```bash
+   cp env.example .env
+   ```
    
-   # Redis Configuration
+   Edit `.env` and add your API keys:
+   ```env
+   # Google Gemini API (optional for AI summaries)
+   VITE_GEMINI_API_KEY=your_gemini_api_key_here
+   
+   # NewsAPI (optional for additional news sources)
+   VITE_NEWS_API_KEY=your_newsapi_key_here
+   
+   # Redis Configuration (optional)
    REDIS_HOST=localhost
    REDIS_PORT=6379
    REDIS_PASSWORD=
    REDIS_DB=0
+   REDIS_URL=
    ```
 
-4. **Start Redis server**
-   ```bash
-   # Using Docker
-   docker run -d -p 6379:6379 redis:latest
-   
-   # Or install Redis locally
-   # macOS: brew install redis
-   # Ubuntu: sudo apt-get install redis-server
-   ```
-
-5. **Start the development server**
+4. **Start development server**
    ```bash
    npm run dev
    ```
 
-## 🏗️ Architecture
+## 🎯 Usage
 
-### Redis AI Service (`services/redisService.ts`)
-- **Cache Management**: Intelligent caching with TTL
-- **Vector Search**: Semantic similarity search for topics
-- **Session Management**: User session tracking and preferences
-- **Analytics**: Request logging and performance metrics
-- **Health Monitoring**: Connection status and error handling
+1. **Enter a topic** in the search field
+2. **Click "Get News"** to fetch real-time articles
+3. **Browse articles** from multiple sources
+4. **Click play button** to listen to articles
+5. **Click "Read Full Article"** to open original source
 
-### Enhanced Gemini Service (`services/geminiService.ts`)
-- **Caching Integration**: Check cache before API calls
-- **Vector Search**: Enhance prompts with similar topics
-- **Session Support**: Track user interactions
-- **Performance Logging**: Monitor response times
+## 📋 Available Topics
 
-### Components
-- **RedisStatus**: Real-time Redis connection and analytics display
-- **TopicInput**: Enhanced with session management and recent topics
-- **ArticleCard**: Display generated articles with voice support
-
-## 🔧 Configuration
-
-### Redis Settings
-```typescript
-const redisConfig = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-  password: process.env.REDIS_PASSWORD,
-  db: parseInt(process.env.REDIS_DB || '0'),
-  retryDelayOnFailover: 100,
-  maxRetriesPerRequest: 3,
-};
-```
-
-### Cache Settings
-- **News Cache TTL**: 1 hour (3600 seconds)
-- **Vector Index TTL**: 24 hours (86400 seconds)
-- **Session TTL**: 24 hours (86400 seconds)
-- **Analytics TTL**: 7 days (604800 seconds)
-
-## 📊 Analytics
-
-The application tracks:
-- Total AI requests
-- Popular topics
-- Average response times
-- Cache hit rates
-- User session data
-
-## 🚀 Performance Benefits
-
-- **15x Faster**: Semantic cache hits
-- **30% Cheaper**: Reduced API calls
-- **Real-time**: Instant responses for cached content
-- **Scalable**: Redis handles high concurrency
-- **Intelligent**: Vector search for similar topics
-
-## 🔍 Usage
-
-1. **Enter a topic** in the input field
-2. **View Redis status** in the sidebar
-3. **Generate articles** with AI
-4. **Listen to articles** with voice synthesis
-5. **Track analytics** in real-time
-
-## 🛡️ Error Handling
-
-- **Redis Connection**: Graceful fallback if Redis is unavailable
-- **API Errors**: User-friendly error messages
-- **Cache Misses**: Automatic fallback to API calls
-- **Session Recovery**: Automatic session recreation
+- Technology & AI
+- Science & Research
+- Health & Medicine
+- Business & Economy
+- Space Exploration
+- Climate Change
+- And any custom topic you want to search
 
 ## 🔧 Development
 
-### Adding New Features
-1. Extend the `RedisAIService` class
-2. Update TypeScript interfaces in `types.ts`
-3. Create new components following SOLID principles
-4. Add professional styling with Tailwind CSS
+### Scripts
 
-### Testing Redis Connection
-```typescript
-import redisAI from './services/redisService';
+```bash
+# Start development server
+npm run dev
 
-// Check connection
-const isHealthy = await redisAI.healthCheck();
-console.log('Redis healthy:', isHealthy);
+# Build for production
+npm run build
 
-// Get analytics
-const analytics = await redisAI.getAnalytics();
-console.log('Analytics:', analytics);
+# Preview production build
+npm run preview
+
+# Redis management (optional)
+npm run redis:start
+npm run redis:stop
+npm run redis:logs
+npm run redis:test
 ```
 
-## 📈 Monitoring
+### Project Structure
 
-Monitor Redis AI performance:
-- Connection status in real-time
-- Cache hit/miss ratios
-- Popular topics and trends
-- Response time analytics
-- Error rates and recovery
+```
+voice-news-summary/
+├── components/          # React components
+│   ├── VoiceControls.tsx
+│   ├── ThemeToggle.tsx
+│   └── ...
+├── services/           # API services
+│   ├── rssService.ts   # RSS integration
+│   ├── geminiService.ts
+│   └── redisService.ts
+├── hooks/              # Custom React hooks
+│   └── useTextToSpeech.ts
+├── types.ts            # TypeScript interfaces
+└── App.tsx            # Main application
+```
+
+## 🌐 Deployment
+
+### Vercel (Recommended)
+
+1. **Connect your repository** to Vercel
+2. **Set environment variables** in Vercel dashboard
+3. **Deploy automatically** on push to main branch
+
+### Manual Deployment
+
+```bash
+npm run build
+# Upload dist/ folder to your hosting provider
+```
+
+## 🔑 API Keys
+
+### NewsAPI (Optional)
+- Get free API key from [newsapi.org](https://newsapi.org)
+- Add to `VITE_NEWS_API_KEY` environment variable
+- Provides additional news sources
+
+### Google Gemini API (Optional)
+- Get API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+- Add to `VITE_GEMINI_API_KEY` environment variable
+- Used for AI-generated summaries
+
+## 🎨 Features
+
+### Real-time News
+- Fetches articles from Google News RSS feeds
+- Filters by topic relevance
+- Removes duplicates automatically
+- Shows publication dates
+
+### Voice Controls
+- Play/Stop/Pause functionality
+- Browser-native text-to-speech
+- Works with any article content
+
+### Responsive Design
+- Professional styling with inline CSS
+- Dark/Light theme toggle
+- Mobile-friendly layout
+- Accessible design
+
+### Error Handling
+- Graceful fallbacks when APIs fail
+- User-friendly error messages
+- Loading states and indicators
+
+## 📊 Performance
+
+- **Fast Loading**: Optimized bundle size
+- **Caching**: Redis integration for performance
+- **Real-time**: Fresh content from RSS feeds
+- **Responsive**: Works on all devices
 
 ## 🤝 Contributing
 
-1. Follow SOLID principles for component design
-2. Use professional Tailwind CSS styling
-3. Add proper TypeScript types
-4. Include error handling
-5. Test Redis integration
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
 ## 📄 License
 
 MIT License - see LICENSE file for details
+
+## 🆘 Support
+
+If you encounter any issues:
+
+1. Check the browser console for errors
+2. Verify your environment variables
+3. Ensure you have a stable internet connection
+4. Try refreshing the page
+
+---
+
+**Built with ❤️ using React, TypeScript, and modern web technologies**

@@ -1,39 +1,40 @@
 
 export interface Article {
-  id?: string;
   title: string;
   source: string;
   summary: string;
+  url?: string;
+  publishedAt?: string;
+  author?: string;
 }
 
 // Redis AI Types
 export interface CacheEntry {
-  key: string;
   data: any;
-  ttl?: number;
   timestamp: number;
+  ttl: number;
 }
 
 export interface VectorSearchResult {
   id: string;
   score: number;
   content: string;
-  metadata?: Record<string, any>;
 }
 
 export interface UserSession {
   sessionId: string;
   userId?: string;
-  topicHistory: string[];
+  topics: string[];
+  createdAt: number;
   lastActivity: number;
-  preferences?: Record<string, any>;
 }
 
 export interface AIRequest {
+  id: string;
   topic: string;
-  sessionId: string;
   timestamp: number;
-  responseTime?: number;
+  responseTime: number;
+  success: boolean;
 }
 
 export interface RedisConfig {

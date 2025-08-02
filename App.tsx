@@ -2,12 +2,14 @@
 import React, { useState } from 'react';
 import { Article } from './types';
 import VoiceControls from './components/VoiceControls';
+import rssService from './services/rssService';
 
 function App() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [topic, setTopic] = useState('latest breakthroughs in AI');
   const [isDark, setIsDark] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -20,119 +22,25 @@ function App() {
     }
   };
 
-  const generateArticlesForTopic = (topic: string): Article[] => {
-    const topicLower = topic.toLowerCase();
-    
-    // AI and Technology topics
-    if (topicLower.includes('ai') || topicLower.includes('artificial intelligence')) {
-      return [
-        {
-          title: "OpenAI Releases GPT-5 with Revolutionary Multimodal Capabilities",
-          source: "Tech Innovation Daily",
-          summary: "OpenAI has unveiled GPT-5, featuring unprecedented multimodal understanding that can process text, images, audio, and video simultaneously. The new model demonstrates human-level reasoning across multiple domains."
-        },
-        {
-          title: "Google DeepMind Achieves Breakthrough in Protein Folding Prediction",
-          source: "Science & Technology Weekly",
-          summary: "DeepMind's AlphaFold 3 has solved complex protein structures with 99% accuracy, revolutionizing drug discovery and biotechnology research worldwide."
-        }
-      ];
-    }
-    
-    // Quantum Computing topics
-    if (topicLower.includes('quantum')) {
-      return [
-        {
-          title: "IBM Achieves 1000+ Qubit Quantum Processor Milestone",
-          source: "Quantum Computing Today",
-          summary: "IBM has successfully built a 1,121-qubit Condor processor, marking a significant step toward quantum advantage in solving complex computational problems."
-        },
-        {
-          title: "Microsoft's Topological Qubits Show 99.8% Error Correction",
-          source: "Advanced Computing Journal",
-          summary: "Microsoft's topological qubit approach demonstrates unprecedented error rates, bringing fault-tolerant quantum computing closer to reality."
-        }
-      ];
-    }
-    
-    // Space Exploration topics
-    if (topicLower.includes('space') || topicLower.includes('exploration')) {
-      return [
-        {
-          title: "NASA's Artemis III Mission Confirms First Woman on Moon",
-          source: "Space Exploration News",
-          summary: "NASA has announced the Artemis III mission will land the first woman and next man on the lunar surface, marking humanity's return to the Moon after 50 years."
-        },
-        {
-          title: "SpaceX Starship Completes Successful Mars Simulation Mission",
-          source: "Interplanetary Weekly",
-          summary: "SpaceX's Starship prototype has completed a full Mars mission simulation, including landing and return procedures, advancing human Mars exploration timeline."
-        }
-      ];
-    }
-    
-    // Climate Change topics
-    if (topicLower.includes('climate') || topicLower.includes('environment')) {
-      return [
-        {
-          title: "Global Carbon Capture Technology Reaches 90% Efficiency",
-          source: "Environmental Science Today",
-          summary: "New carbon capture and storage technology has achieved 90% efficiency rates, potentially removing billions of tons of CO2 from the atmosphere annually."
-        },
-        {
-          title: "Renewable Energy Surpasses Fossil Fuels in Global Electricity Generation",
-          source: "Green Energy Weekly",
-          summary: "For the first time in history, renewable energy sources have generated more electricity than fossil fuels globally, marking a major milestone in the energy transition."
-        }
-      ];
-    }
-    
-    // Medical Technology topics
-    if (topicLower.includes('medical') || topicLower.includes('health') || topicLower.includes('medicine')) {
-      return [
-        {
-          title: "CRISPR Gene Editing Successfully Treats Sickle Cell Disease",
-          source: "Medical Breakthroughs Daily",
-          summary: "Scientists have successfully used CRISPR gene editing to cure sickle cell disease in clinical trials, offering hope to millions of patients worldwide."
-        },
-        {
-          title: "AI-Powered Cancer Detection Achieves 99.5% Accuracy",
-          source: "Healthcare Innovation Journal",
-          summary: "New AI algorithms can detect early-stage cancer with 99.5% accuracy, potentially saving millions of lives through early intervention and treatment."
-        }
-      ];
-    }
-    
-    // Default articles for other topics
-    return [
-      {
-        title: `Latest Developments in ${topic}`,
-        source: "Global News Network",
-        summary: `Recent advancements in ${topic} have shown promising results, with researchers making significant breakthroughs in understanding and application of this field.`
-      },
-      {
-        title: `${topic} Revolutionizes Industry Standards`,
-        source: "Innovation Today",
-        summary: `The field of ${topic} continues to evolve rapidly, with new technologies and methodologies emerging that could transform how we approach related challenges.`
-      }
-    ];
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!topic.trim()) return;
 
     setIsLoading(true);
+    setError(null);
     
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Fetch real articles from RSS
+      const fetchedArticles = await rssService.getArticles(topic, 4);
       
-      // Generate articles based on topic
-      const generatedArticles = generateArticlesForTopic(topic);
-      setArticles(generatedArticles);
+      if (fetchedArticles.length === 0) {
+        setError('No articles found for this topic. Try a different search term.');
+      } else {
+        setArticles(fetchedArticles);
+      }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching articles:', error);
+      setError('Failed to fetch articles. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -240,18 +148,11 @@ function App() {
               padding: '1rem',
               border: `1px solid ${isDark ? '#4b5563' : '#e5e7eb'}`
             }}>
-              <h3 style={{ fontWeight: '600', marginBottom: '0.75rem' }}>Redis Status</h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                <div style={{ 
-                  width: '0.5rem', 
-                  height: '0.5rem', 
-                  backgroundColor: '#10b981',
-                  borderRadius: '50%'
-                }}></div>
-                <span style={{ fontSize: '0.75rem', color: '#10b981' }}>Connected</span>
-              </div>
+              <h3 style={{ fontWeight: '600', marginBottom: '0.75rem' }}>News Sources</h3>
               <div style={{ fontSize: '0.75rem', color: isDark ? '#9ca3af' : '#6b7280' }}>
-                Caching enabled • Session management active
+                <div style={{ marginBottom: '0.5rem' }}>📰 Google News RSS</div>
+                <div style={{ marginBottom: '0.5rem' }}>🌐 NewsAPI</div>
+                <div>⚡ Real-time updates</div>
               </div>
             </div>
           </div>
@@ -270,7 +171,7 @@ function App() {
                   AI-Powered News Generator
                 </h1>
                 <p style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                  Enter a topic to get AI-generated news summaries, read aloud on demand.
+                  Get real-time news from RSS feeds, read aloud on demand.
                 </p>
               </div>
               
@@ -326,21 +227,34 @@ function App() {
                     opacity: (!topic.trim() || isLoading) ? 0.5 : 1
                   }}
                 >
-                  {isLoading ? 'Generating Articles...' : 'Get News'}
+                  {isLoading ? 'Fetching Articles...' : 'Get News'}
                 </button>
               </form>
             </div>
 
+            {error && (
+              <div style={{ 
+                backgroundColor: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '0.5rem',
+                padding: '1rem',
+                marginBottom: '1rem',
+                color: '#dc2626'
+              }}>
+                {error}
+              </div>
+            )}
+
             {isLoading && (
               <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <div style={{ color: '#3b82f6' }}>Generating articles...</div>
+                <div style={{ color: '#3b82f6' }}>Fetching articles from RSS feeds...</div>
               </div>
             )}
 
             {articles.length > 0 && !isLoading && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-                  Generated Articles ({articles.length})
+                  Latest Articles ({articles.length})
                 </h2>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
@@ -354,14 +268,37 @@ function App() {
                       <h3 style={{ fontWeight: '600', fontSize: '1.125rem', marginBottom: '0.5rem' }}>
                         {article.title}
                       </h3>
-                      <p style={{ color: isDark ? '#9ca3af' : '#6b7280', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
-                        {article.source}
-                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                        <p style={{ color: isDark ? '#9ca3af' : '#6b7280', fontSize: '0.875rem' }}>
+                          {article.source}
+                        </p>
+                        {article.publishedAt && (
+                          <p style={{ color: isDark ? '#9ca3af' : '#6b7280', fontSize: '0.75rem' }}>
+                            {new Date(article.publishedAt).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
                       <p style={{ color: isDark ? '#d1d5db' : '#374151', marginBottom: '1rem' }}>
                         {article.summary}
                       </p>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <VoiceControls text={`${article.title}. ${article.summary}`} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <VoiceControls text={`${article.title}. ${article.summary}`} />
+                        </div>
+                        {article.url && (
+                          <a 
+                            href={article.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            style={{
+                              fontSize: '0.75rem',
+                              color: '#3b82f6',
+                              textDecoration: 'none'
+                            }}
+                          >
+                            Read Full Article →
+                          </a>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -369,14 +306,14 @@ function App() {
               </div>
             )}
 
-            {articles.length === 0 && !isLoading && (
+            {articles.length === 0 && !isLoading && !error && (
               <div style={{ textAlign: 'center', padding: '3rem' }}>
                 <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📰</div>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>
                   No articles yet
                 </h3>
                 <p style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                  Enter a topic above to generate news articles
+                  Enter a topic above to fetch real-time news articles
                 </p>
               </div>
             )}
