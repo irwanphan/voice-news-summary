@@ -1,10 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { generateNewsWithSession } from '../services/geminiService';
-import { Article, VectorSearchResult } from '../types';
-import redisAI from '../services/redisService';
-import VectorSearchResults from './VectorSearchResults';
-import CacheIndicator from './CacheIndicator';
+import { generateNewsAndSummaries } from '../services/geminiService';
+import { Article } from '../types';
 
 interface TopicInputProps {
   onArticlesGenerated: (articles: Article[]) => void;
@@ -18,31 +15,15 @@ const TopicInput: React.FC<TopicInputProps> = ({
   className = '' 
 }) => {
   const [topic, setTopic] = useState('');
-  const [sessionId, setSessionId] = useState<string>('');
   const [recentTopics, setRecentTopics] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [similarTopics, setSimilarTopics] = useState<VectorSearchResult[]>([]);
-  const [isCacheHit, setIsCacheHit] = useState(false);
-  const [responseTime, setResponseTime] = useState(0);
 
   useEffect(() => {
-    // Initialize session on component mount
-    const initSession = async () => {
-      try {
-        const newSessionId = await redisAI.createSession();
-        setSessionId(newSessionId);
-        
-        // Get recent topics from session
-        const session = await redisAI.getSession(newSessionId);
-        if (session?.topicHistory) {
-          setRecentTopics(session.topicHistory);
-        }
-      } catch (error) {
-        console.error('Failed to initialize session:', error);
-      }
-    };
-
-    initSession();
+    // Load recent topics from localStorage
+    const storedTopics = localStorage.getItem('recentTopics');
+    if (storedTopics) {
+      setRecentTopics(JSON.parse(storedTopics));
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,23 +32,17 @@ const TopicInput: React.FC<TopicInputProps> = ({
 
     setIsSubmitting(true);
     onLoading(true);
-    const startTime = Date.now();
 
     try {
-      // Check for similar topics first
-      const similar = await redisAI.searchSimilarTopics(topic.trim(), 3);
-      setSimilarTopics(similar);
-
-      const articles = await generateNewsWithSession(topic.trim(), sessionId);
+      const articles = await generateNewsAndSummaries(topic.trim());
       onArticlesGenerated(articles);
       
       // Update recent topics
-      setRecentTopics(prev => [topic.trim(), ...prev.filter(t => t !== topic.trim())].slice(0, 5));
+      const updatedTopics = [topic.trim(), ...recentTopics.filter(t => t !== topic.trim())].slice(0, 5);
+      setRecentTopics(updatedTopics);
       
-      // Set performance metrics
-      const endTime = Date.now();
-      setResponseTime(endTime - startTime);
-      setIsCacheHit(false); // Will be updated by the service
+      // Save to localStorage
+      localStorage.setItem('recentTopics', JSON.stringify(updatedTopics));
       
       // Clear input
       setTopic('');
@@ -84,10 +59,7 @@ const TopicInput: React.FC<TopicInputProps> = ({
     setTopic(recentTopic);
   };
 
-  const handleSimilarTopicClick = (similarTopic: string) => {
-    setTopic(similarTopic);
-    setSimilarTopics([]); // Clear similar topics when one is selected
-  };
+
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -134,25 +106,8 @@ const TopicInput: React.FC<TopicInputProps> = ({
         </div>
       )}
 
-      {similarTopics.length > 0 && (
-        <VectorSearchResults 
-          results={similarTopics}
-          onTopicSelect={handleSimilarTopicClick}
-          className="mt-4"
-        />
-      )}
-
-      {responseTime > 0 && (
-        <div className="flex justify-center mt-4">
-          <CacheIndicator 
-            isCacheHit={isCacheHit}
-            responseTime={responseTime}
-          />
-        </div>
-      )}
-
       <div className="text-xs text-gray-500 text-center">
-        Powered by Redis AI for enhanced performance and caching
+        Powered by AI for enhanced performance
       </div>
     </div>
   );

@@ -1,12 +1,11 @@
-
 import React, { useState } from 'react';
-import Header from './components/Header';
-import TopicInput from './components/TopicInput';
-import ArticleCard from './components/ArticleCard';
-import Spinner from './components/Spinner';
-import { Article } from './types';
+import Header from './Header';
+import TopicInput from './TopicInput';
+import ArticleCard from './ArticleCard';
+import Spinner from './Spinner';
+import { Article } from '../types';
 
-function App() {
+function SimpleApp() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -81,4 +80,4 @@ function App() {
   );
 }
 
-export default App;
+export default SimpleApp; 

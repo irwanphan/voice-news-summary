@@ -26,7 +26,7 @@ const RedisStatus: React.FC<RedisStatusProps> = ({ className = '' }) => {
           setAnalytics(analyticsData);
         }
       } catch (error) {
-        console.error('Redis status check failed:', error);
+        console.log('Redis not available in production, running in fallback mode');
         setIsConnected(false);
       } finally {
         setLoading(false);
