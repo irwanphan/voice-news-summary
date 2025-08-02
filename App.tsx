@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Article } from './types';
 import VoiceControls from './components/VoiceControls';
-import rssService from './services/rssService';
 
 function App() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -22,6 +21,72 @@ function App() {
     }
   };
 
+  const generateMockArticles = (topic: string): Article[] => {
+    const topicLower = topic.toLowerCase();
+    
+    if (topicLower.includes('ai') || topicLower.includes('artificial intelligence')) {
+      return [
+        {
+          title: "OpenAI Releases GPT-5 with Revolutionary Multimodal Capabilities",
+          source: "Tech Innovation Daily",
+          summary: "OpenAI has unveiled GPT-5, featuring unprecedented multimodal understanding that can process text, images, audio, and video simultaneously. The new model demonstrates human-level reasoning across multiple domains.",
+          url: "https://example.com/article1",
+          publishedAt: new Date().toISOString(),
+          author: "Tech Reporter"
+        },
+        {
+          title: "Google DeepMind Achieves Breakthrough in Protein Folding Prediction",
+          source: "Science & Technology Weekly",
+          summary: "DeepMind's AlphaFold 3 has solved complex protein structures with 99% accuracy, revolutionizing drug discovery and biotechnology research worldwide.",
+          url: "https://example.com/article2",
+          publishedAt: new Date().toISOString(),
+          author: "Science Editor"
+        }
+      ];
+    }
+    
+    if (topicLower.includes('quantum')) {
+      return [
+        {
+          title: "IBM Achieves 1000+ Qubit Quantum Processor Milestone",
+          source: "Quantum Computing Today",
+          summary: "IBM has successfully built a 1,121-qubit Condor processor, marking a significant step toward quantum advantage in solving complex computational problems.",
+          url: "https://example.com/article3",
+          publishedAt: new Date().toISOString(),
+          author: "Quantum Researcher"
+        },
+        {
+          title: "Microsoft's Topological Qubits Show 99.8% Error Correction",
+          source: "Advanced Computing Journal",
+          summary: "Microsoft's topological qubit approach demonstrates unprecedented error rates, bringing fault-tolerant quantum computing closer to reality.",
+          url: "https://example.com/article4",
+          publishedAt: new Date().toISOString(),
+          author: "Computing Expert"
+        }
+      ];
+    }
+    
+    // Default articles for any topic
+    return [
+      {
+        title: `Latest Developments in ${topic}`,
+        source: "Global News Network",
+        summary: `Recent advancements in ${topic} have shown promising results, with researchers making significant breakthroughs in understanding and application of this field.`,
+        url: "https://example.com/article5",
+        publishedAt: new Date().toISOString(),
+        author: "News Reporter"
+      },
+      {
+        title: `${topic} Revolutionizes Industry Standards`,
+        source: "Innovation Today",
+        summary: `The field of ${topic} continues to evolve rapidly, with new technologies and methodologies emerging that could transform how we approach related challenges.`,
+        url: "https://example.com/article6",
+        publishedAt: new Date().toISOString(),
+        author: "Industry Analyst"
+      }
+    ];
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!topic.trim()) return;
@@ -30,14 +95,12 @@ function App() {
     setError(null);
     
     try {
-      // Fetch real articles from RSS
-      const fetchedArticles = await rssService.getArticles(topic, 4);
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      if (fetchedArticles.length === 0) {
-        setError('No articles found for this topic. Try a different search term.');
-      } else {
-        setArticles(fetchedArticles);
-      }
+      // Generate mock articles based on topic
+      const fetchedArticles = generateMockArticles(topic);
+      setArticles(fetchedArticles);
     } catch (error) {
       console.error('Error fetching articles:', error);
       setError('Failed to fetch articles. Please try again.');
@@ -150,9 +213,9 @@ function App() {
             }}>
               <h3 style={{ fontWeight: '600', marginBottom: '0.75rem' }}>News Sources</h3>
               <div style={{ fontSize: '0.75rem', color: isDark ? '#9ca3af' : '#6b7280' }}>
-                <div style={{ marginBottom: '0.5rem' }}>📰 Google News RSS</div>
-                <div style={{ marginBottom: '0.5rem' }}>🌐 NewsAPI</div>
-                <div>⚡ Real-time updates</div>
+                <div style={{ marginBottom: '0.5rem' }}>📰 Mock Data (Demo)</div>
+                <div style={{ marginBottom: '0.5rem' }}>🌐 Topic-based Articles</div>
+                <div>⚡ Instant Generation</div>
               </div>
             </div>
           </div>
@@ -171,7 +234,7 @@ function App() {
                   AI-Powered News Generator
                 </h1>
                 <p style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                  Get real-time news from RSS feeds, read aloud on demand.
+                  Get topic-specific articles with voice controls (Demo Mode).
                 </p>
               </div>
               
@@ -227,7 +290,7 @@ function App() {
                     opacity: (!topic.trim() || isLoading) ? 0.5 : 1
                   }}
                 >
-                  {isLoading ? 'Fetching Articles...' : 'Get News'}
+                  {isLoading ? 'Generating Articles...' : 'Get News'}
                 </button>
               </form>
             </div>
@@ -247,14 +310,14 @@ function App() {
 
             {isLoading && (
               <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <div style={{ color: '#3b82f6' }}>Fetching articles from RSS feeds...</div>
+                <div style={{ color: '#3b82f6' }}>Generating articles...</div>
               </div>
             )}
 
             {articles.length > 0 && !isLoading && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-                  Latest Articles ({articles.length})
+                  Generated Articles ({articles.length})
                 </h2>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
@@ -313,7 +376,7 @@ function App() {
                   No articles yet
                 </h3>
                 <p style={{ color: isDark ? '#9ca3af' : '#6b7280' }}>
-                  Enter a topic above to fetch real-time news articles
+                  Enter a topic above to generate news articles
                 </p>
               </div>
             )}
